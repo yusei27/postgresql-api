@@ -10,6 +10,10 @@ from flask import Flask, jsonify, request
 # https://qiita.com/nekobake/items/4a6c1464889be2b53a63
 # https://qiita.com/nekobake/items/4a6c1464889be2b53a63
 
+
+#あとで並列にリクエストを処理できるようにする
+# https://qiita.com/5zm/items/251be97d2800bf67b1c6
+
 def connect_postgresql():
         # コンフィグファイルからデータを取得
         config_db = configparser.ConfigParser()
