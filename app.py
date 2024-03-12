@@ -1,4 +1,5 @@
 import psycopg2.pool
+from db.execute_sql import ExecuteSQL
 from flask_cors import CORS
 import configparser
 import os
@@ -6,13 +7,34 @@ import errno
 
 from flask import Flask, jsonify, request
 
+app = Flask(__name__)
+
 ###参考サイト
-# https://qiita.com/nekobake/items/4a6c1464889be2b53a63
+# https://www.geeksforgeeks.org/python-postgresql-connection-pooling-using-psycopg2/
 # https://qiita.com/nekobake/items/4a6c1464889be2b53a63
 
 
 #あとで並列にリクエストを処理できるようにする
 # https://qiita.com/5zm/items/251be97d2800bf67b1c6
+@app.route("/tmp", methods=["GET"])
+def get_tmp():
+    print("tmp_select")
+    try:
+        db = ExecuteSQL(pool)
+        sql = f"""
+                INSERT INTO "fridge-system".user_table
+                (name_user, mail)
+                    VALUES (%s, %s);    
+        """
+        db.execute_query(sql, bind_var=("nova-tarou", "25"))
+        db.commit()
+    except Exception as e:
+        print(e)
+        db.rollback()
+        print("ロールバックを実行しました。")
+        return jsonify({'status':300, 'data':3})
+
+
 
 def connect_postgresql():
         # コンフィグファイルからデータを取得
@@ -36,8 +58,8 @@ def connect_postgresql():
 
 
 if __name__== '__main__':
-      app = Flask(__name__)
+      
       #特定のオリジンだけを許可する
       cors = CORS(app, resources={r"/*":{"origin": ["http://localhost:5173"]}})
-      app.run(host='0.0.0.0', port=3333, debug=True)
-      connect_postgresql()
+      app.run(host='0.0.0.0', port=3333, debug=True, threaded=True)
+      pool = connect_postgresql()
