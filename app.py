@@ -36,6 +36,28 @@ def get_tmp():
 
 
 
+@app.route("/get/units", methods=["GET"])
+def get_units_table():
+    print("tmp_select")
+    try:
+        db = ExecuteSQL(pool)
+        sql = f"""
+            SELECT
+                id_unit, name_unit
+	        FROM "fridge-system".unit_table;
+        """
+        list_units = db.execute_query(sql)
+        print("unitテーブル取得結果", list_units)
+        db.commit()
+        return jsonify({'units':list_units})
+    except Exception as e:
+        print(e)
+        db.rollback()
+        print("ロールバックを実行しました。")
+        return jsonify({'status':300, 'data':3})
+
+
+
 def connect_postgresql():
         # コンフィグファイルからデータを取得
         config_db = configparser.ConfigParser()
@@ -61,5 +83,5 @@ if __name__== '__main__':
       
       #特定のオリジンだけを許可する
       cors = CORS(app, resources={r"/*":{"origin": ["http://localhost:5173"]}})
-      app.run(host='0.0.0.0', port=3333, debug=True, threaded=True)
+      app.run(host='0.0.0.0', port=3334, debug=True, threaded=True)
       pool = connect_postgresql()
