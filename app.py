@@ -9,6 +9,7 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
+
 ###参考サイト
 # https://www.geeksforgeeks.org/python-postgresql-connection-pooling-using-psycopg2/
 # https://qiita.com/nekobake/items/4a6c1464889be2b53a63
@@ -36,7 +37,7 @@ def get_tmp():
 
 
 
-@app.route("/get/units", methods=["GET"])
+@app.route("/get/units", methods=["GET", "POST"])
 def get_units_table():
     print("tmp_select")
     try:
@@ -49,7 +50,7 @@ def get_units_table():
         list_units = db.execute_query(sql)
         print("unitテーブル取得結果", list_units)
         db.commit()
-        return jsonify({'units':list_units})
+        return jsonify({'status':200, 'units':list_units})
     except Exception as e:
         print(e)
         db.rollback()
@@ -77,6 +78,9 @@ def connect_postgresql():
             database = config_db["POSTGRESSQL_DB_SERVER"]["dbname"]
         )
         print("プール作成")
+        return pool
+
+pool = connect_postgresql()
 
 
 if __name__== '__main__':
@@ -84,4 +88,4 @@ if __name__== '__main__':
       #特定のオリジンだけを許可する
       cors = CORS(app, resources={r"/*":{"origin": ["http://localhost:5173"]}})
       app.run(host='0.0.0.0', port=3334, debug=True, threaded=True)
-      pool = connect_postgresql()
+      

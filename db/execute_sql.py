@@ -15,8 +15,8 @@ class ExecuteSQL:
         :return: None
         """
         # カーソルを作成する
-        connection = pool.get_connection()
-        self.cursor = connection.cursor()
+        self.connection = pool.getconn()
+        self.cursor = self.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         #self.cursor = self.con.cursor(cursor_factory=psycopg2.extras.DictCursor)
     def execute_non_query(self, sql: str, bind_var: tuple = None) -> None:
         """CREATE/INSERT/UPDATE/DELETEのSQL実行メソッド
@@ -48,6 +48,7 @@ class ExecuteSQL:
         result = []
         if count == 0:
             rows = self.cursor.fetchall()
+            print("rows2", rows)
             for row in rows:
                 result.append(dict(row))
         else:
@@ -60,7 +61,7 @@ class ExecuteSQL:
         """コミット
         :return: None
         """
-        self.con.commit()
+        self.connection.commit()
     def rollback(self) -> None:
         """ロールバック
         :return: None
@@ -71,4 +72,4 @@ class ExecuteSQL:
         :return: None
         """
         self.cursor.close()
-        self.con.close()
+        self.connection.close()
