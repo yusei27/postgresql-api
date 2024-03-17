@@ -23,12 +23,13 @@ def get_tmp():
     try:
         db = ExecuteSQL(pool)
         sql = f"""
-                INSERT INTO "fridge-system".user_table
+                INSERT INTO "fridge_system".user_table
                 (name_user, mail)
                     VALUES (%s, %s);    
         """
         db.execute_query(sql, bind_var=("nova-tarou", "25"))
         db.commit()
+        db.__del__
     except Exception as e:
         print(e)
         db.rollback()
@@ -45,17 +46,49 @@ def get_units_table():
         sql = f"""
             SELECT
                 id_unit, name_unit
-	        FROM "fridge-system".unit_table;
+	        FROM "fridge_system".unit_table;
         """
         list_units = db.execute_query(sql)
         print("unitテーブル取得結果", list_units)
         db.commit()
+        db.__del__
         return jsonify({'status':200, 'units':list_units})
     except Exception as e:
         print(e)
         db.rollback()
         print("ロールバックを実行しました。")
         return jsonify({'status':300, 'data':3})
+
+@app.route("/select/data", methods=["GET", "POST"])
+def get_table_data():
+    try:
+        request_data = request.get_json()
+        print("request_data", request_data)
+        table = request_data["table"]
+        columns = request_data["columns"]
+        db = ExecuteSQL(pool)
+        list_units = db.execute_query_column(table=table, bind_var=tuple(columns))
+        print("unitテーブル取得結果", list_units)
+        db.commit()
+        db.__del__
+        return jsonify({'status':200, 'data':list_units})
+    except Exception as e:
+        print(e)
+        db.rollback()
+        print("ロールバックを実行しました。")
+        return jsonify({'status':300, 'data':3})
+        
+        
+    
+@app.route("/register/recipe", methods=["GET"])
+def register_recipe():
+    print("レシピ登録")
+    try:
+        db = ExecuteSQL(pool)
+        db.execute_non_query("""LOCK TABLE "fridge-system".recipe_table ROW EXCLUSIVE""")
+
+    except Exception as e:
+        print(e)
 
 
 
