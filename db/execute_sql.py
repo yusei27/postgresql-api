@@ -79,7 +79,7 @@ class ExecuteSQL:
             sql = SQL("SELECT {field} FROM {schema}.{table}").format(
                 field = SQL(',').join([Identifier(bind) for bind in bind_var]),
                 schema = Identifier('fridge_system') ,
-                table = Identifier('ingredient_table')
+                table = Identifier(table)
             )
             print(sql.as_string(self.connection))
             # バインド変数がある場合は指定して実行
@@ -96,6 +96,20 @@ class ExecuteSQL:
             for row in rows:
                 result.append(dict(row))
         return result
+    
+    def get_next_sequence(self, sequence):
+        """次のシーケンス番号を吐き出す。シーケンス番号を確認するsqlではないので注意。
+        :return: number
+        """
+        sql = SQL("SELECT nextval({schema}.{sequence}')").format(
+            schema = Identifier('fridge_system'),
+            sequence = Identifier(sequence)
+        )
+        print(sql.as_string(self.connection))
+        self.cursor.execute(sql)
+        nextval = self.cursor.fetchall()
+        return nextval
+    
     def commit(self) -> None:
         """コミット
         :return: None

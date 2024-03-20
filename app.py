@@ -20,8 +20,8 @@ app = Flask(__name__)
 @app.route("/tmp", methods=["GET"])
 def get_tmp():
     print("tmp_select")
+    db = ExecuteSQL(pool)
     try:
-        db = ExecuteSQL(pool)
         sql = f"""
                 INSERT INTO "fridge_system".user_table
                 (name_user, mail)
@@ -33,6 +33,7 @@ def get_tmp():
     except Exception as e:
         print(e)
         db.rollback()
+        db.__del__
         print("ロールバックを実行しました。")
         return jsonify({'status':300, 'data':3})
 
@@ -41,8 +42,8 @@ def get_tmp():
 @app.route("/get/units", methods=["GET", "POST"])
 def get_units_table():
     print("tmp_select")
+    db = ExecuteSQL(pool)
     try:
-        db = ExecuteSQL(pool)
         sql = f"""
             SELECT
                 id_unit, name_unit
@@ -56,6 +57,7 @@ def get_units_table():
     except Exception as e:
         print(e)
         db.rollback()
+        db.__del__
         print("ロールバックを実行しました。")
         return jsonify({'status':300, 'data':3})
 
@@ -66,7 +68,14 @@ def get_table_data():
         print("request_data", request_data)
         table = request_data["table"]
         columns = request_data["columns"]
-        db = ExecuteSQL(pool)
+        print("テーブル名", table)
+    except Exception as e:
+        print(e)
+        print("リクエストの取得に失敗しました。")
+    
+    db = ExecuteSQL(pool)
+    
+    try:
         list_units = db.execute_query_column(table=table, bind_var=tuple(columns))
         print("unitテーブル取得結果", list_units)
         db.commit()
@@ -75,17 +84,45 @@ def get_table_data():
     except Exception as e:
         print(e)
         db.rollback()
+        db.__del__
         print("ロールバックを実行しました。")
         return jsonify({'status':300, 'data':3})
         
         
     
-@app.route("/register/recipe", methods=["GET"])
+@app.route("/register/recipe", methods=["POST"])
 def register_recipe():
+# {
+#     name_recipe: '肉じゃが', 
+#     serving_size: 3, 
+#     method: '感覚的', 
+#     ingredient_alredy_exist: [{id_ingredient: 1, num: 2, id_unit: 3, id_genre: 4},{id_ingredient: 2, num: 2, id_unit: 1, id_genre: 1}], 
+#     ingredient_not_exist: {ingredient_name: 'しょうゆ', num: 2, id_unit: 2, id_genre: 5}
+# }
     print("レシピ登録")
     try:
+        request_data = request.get_json()
+        print("request_data", request_data)
+        name_recipe = request_data["name_recipe"]
+        serving_size = request_data["serving_size"]
+        method = request_data["method"]
+        list_ingredient_not_exist= request_data["ingredient_not_exist"]
+    except Exception as e:
+        print(e)
+        print("リクエストの取得に失敗しました。")
+    try:
         db = ExecuteSQL(pool)
-        db.execute_non_query("""LOCK TABLE "fridge-system".recipe_table ROW EXCLUSIVE""")
+        
+        
+        if len(list_ingredient_not_exist) != 0:
+            #材料テーブルに新規データを挿入するとき
+            #材料テーブルの新規シーケンス番号を取得
+            db.execute_non_query("""LOCK TABLE "fridge-system".ingredient_table ROW EXCLUSIVE""")
+            nextval = db.get_next_sequence("id_ingredient_id_ingredient_seq")
+
+        #レシピ登録
+
+        #レシピと材料テーブルにデータ登録
 
     except Exception as e:
         print(e)
@@ -103,7 +140,7 @@ def connect_postgresql():
         config_db.read(config_ini_path)
         pool = psycopg2.pool.SimpleConnectionPool(
             minconn=2,
-            maxconn=4,
+            maxconn=6,
             user=config_db["POSTGRESSQL_DB_SERVER"]["user"],
             password = config_db["POSTGRESSQL_DB_SERVER"]["password"],
             host = config_db["POSTGRESSQL_DB_SERVER"]["host"],
