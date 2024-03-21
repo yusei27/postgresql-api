@@ -125,6 +125,7 @@ def register_recipe():
             print("取得したnextvals", nextvals)
             for index, ingredient in list_ingredient_not_exist:
                 #db.execute_non_query("""LOCK TABLE "fridge-system".ingredient_table ROW EXCLUSIVE""")
+                sqls = []
                 sql = SQL("""INSERT INTO {schema}.{table}
                             (id_ingredient, name_ingredient, fk_id_unit, fk_id_genre)VALUES
                             ({id_ingredient}, {name_ingredient}, {fk_id_unit}, {fk_id_genre})""").format(
@@ -135,8 +136,11 @@ def register_recipe():
                                 fk_id_unit = Identifier(ingredient["id_unit"]),
                                 fk_id_genre = Identifier(ingredient["id_genre"])
                 )
+                sql.append(sql)
+            db.execute_multiple_non_query(sqls=sqls)
 
         #レシピ登録
+
 
         #レシピと材料テーブルにデータ登録
 

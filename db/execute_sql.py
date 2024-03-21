@@ -32,6 +32,17 @@ class ExecuteSQL:
         else:
             # バインド変数がある場合は指定して実行
             self.cursor.execute(sql, bind_var)
+
+    def execute_multiple_non_query(self, sqls: list, bind_var: list = None) -> None:
+        """CREATE/INSERT/UPDATE/DELETEのSQL実行メソッド
+        :param sql: 実行SQL
+        :param bind_var: バインド変数
+        :return: None
+        """
+        for sql in sqls:
+            # SQLの実行
+            self.cursor.execute(sql)
+
     def execute_query(self, sql: str, bind_var: tuple = None, count: int = 0) -> list:
         """SELECTのSQL実行メソッド
         :param sql: 実行SQL
