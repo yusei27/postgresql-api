@@ -4,6 +4,8 @@ from flask_cors import CORS
 import configparser
 import os
 import errno
+from psycopg2.sql import Identifier
+from psycopg2.sql import SQL
 
 from flask import Flask, jsonify, request
 
@@ -13,7 +15,8 @@ app = Flask(__name__)
 ###参考サイト
 # https://www.geeksforgeeks.org/python-postgresql-connection-pooling-using-psycopg2/
 # https://qiita.com/nekobake/items/4a6c1464889be2b53a63
-
+# https://resanaplaza.com/2021/09/15/%E3%80%90-%E3%82%B3%E3%83%94%E3%83%9A%E3%81%A7ok%E3%80%91%EF%BC%99%E5%89%B2%E3%81%AE%E6%A9%9F%E8%83%BD%E3%82%92%E7%B6%B2%E7%BE%85%EF%BC%81pyton%E3%81%8B%E3%82%89postgresql%E3%82%92%E6%89%B1%E3%81%86/
+# https://qiita.com/kg1/items/597684fc1b98ca686a5d
 
 #あとで並列にリクエストを処理できるようにする
 # https://qiita.com/5zm/items/251be97d2800bf67b1c6
@@ -116,9 +119,22 @@ def register_recipe():
         
         if len(list_ingredient_not_exist) != 0:
             #材料テーブルに新規データを挿入するとき
-            #材料テーブルの新規シーケンス番号を取得
-            db.execute_non_query("""LOCK TABLE "fridge-system".ingredient_table ROW EXCLUSIVE""")
-            nextval = db.get_next_sequence("id_ingredient_id_ingredient_seq")
+            #材料テーブルの新規シーケンス番号を挿入レコード分取得
+            sql1 = "SELECT nextval({schema}.{sequence}');" * len(list_ingredient_not_exist)
+            nextvals = db.execute_query(sql=sql1)
+            print("取得したnextvals", nextvals)
+            for index, ingredient in list_ingredient_not_exist:
+                #db.execute_non_query("""LOCK TABLE "fridge-system".ingredient_table ROW EXCLUSIVE""")
+                sql = SQL("""INSERT INTO {schema}.{table}
+                            (id_ingredient, name_ingredient, fk_id_unit, fk_id_genre)VALUES
+                            ({id_ingredient}, {name_ingredient}, {fk_id_unit}, {fk_id_genre})""").format(
+                                schema=Identifier("fridge-system"),
+                                table = Identifier("ingredient_table"),
+                                id_ingredient = Identifier(nextvals[index]),
+                                name_ingredient = Identifier(ingredient["ingredient_name"]),
+                                fk_id_unit = Identifier(ingredient["id_unit"]),
+                                fk_id_genre = Identifier(ingredient["id_genre"])
+                )
 
         #レシピ登録
 
