@@ -4,7 +4,7 @@ from flask_cors import CORS
 import configparser
 import os
 import errno
-from psycopg2.sql import Identifier
+from psycopg2.sql import Identifier, Literal
 from psycopg2.sql import SQL
 
 from flask import Flask, jsonify, request
@@ -102,6 +102,7 @@ def register_recipe():
 #     ingredient_alredy_exist: [{id_ingredient: 1, num: 2, id_unit: 3, id_genre: 4},{id_ingredient: 2, num: 2, id_unit: 1, id_genre: 1}], 
 #     ingredient_not_exist: {ingredient_name: 'しょうゆ', num: 2, id_unit: 2, id_genre: 5}
 # }
+#nextvalのシーケンスの払い出しはロールバックしても戻らない。そのため、ロールバックすると主キーの番号が飛び飛びになる
     print("レシピ登録")
     try:
         request_data = request.get_json()
@@ -109,6 +110,7 @@ def register_recipe():
         name_recipe = request_data["name_recipe"]
         serving_size = request_data["serving_size"]
         method = request_data["method"]
+        list_ingredient_alredy_exist = request_data["ingredient_alredy_exist"]
         list_ingredient_not_exist= request_data["ingredient_not_exist"]
     except Exception as e:
         print(e)
@@ -120,32 +122,65 @@ def register_recipe():
         if len(list_ingredient_not_exist) != 0:
             #材料テーブルに新規データを挿入するとき
             #材料テーブルの新規シーケンス番号を挿入レコード分取得
-            sql1 = "SELECT nextval({schema}.{sequence}');" * len(list_ingredient_not_exist)
-            nextvals = db.execute_query(sql=sql1)
+            sql = "SELECT nextval('fridge_system.id_ingredient_id_ingredient_seq');" * len(list_ingredient_not_exist)
+            nextvals = db.execute_query(sql=sql)
             print("取得したnextvals", nextvals)
             for index, ingredient in list_ingredient_not_exist:
-                #db.execute_non_query("""LOCK TABLE "fridge-system".ingredient_table ROW EXCLUSIVE""")
+                #db.execute_non_query("""LOCK TABLE "fridge_system".ingredient_table ROW EXCLUSIVE""")
                 sqls = []
+                nextval = nextvals[index]
+                list_ingredient_not_exist[index]["id_ingredient"] = nextvals[index]
                 sql = SQL("""INSERT INTO {schema}.{table}
                             (id_ingredient, name_ingredient, fk_id_unit, fk_id_genre)VALUES
                             ({id_ingredient}, {name_ingredient}, {fk_id_unit}, {fk_id_genre})""").format(
-                                schema=Identifier("fridge-system"),
+                                schema=Identifier("fridge_system"),
                                 table = Identifier("ingredient_table"),
-                                id_ingredient = Identifier(nextvals[index]),
-                                name_ingredient = Identifier(ingredient["ingredient_name"]),
-                                fk_id_unit = Identifier(ingredient["id_unit"]),
-                                fk_id_genre = Identifier(ingredient["id_genre"])
+                                id_ingredient = Literal(nextval),
+                                name_ingredient = Literal(ingredient["ingredient_name"]),
+                                fk_id_unit = Literal(ingredient["id_unit"]),
+                                fk_id_genre = Literal(ingredient["id_genre"])
                 )
                 sql.append(sql)
             db.execute_multiple_non_query(sqls=sqls)
 
         #レシピ登録
+        sql = "SELECT nextval('fridge_system.recipe_table_id_recipe_seq');"
+        list_nextval_scalor = db.execute_query(sql=sql)
+        sql = SQL("""INSERT INTO {schema}.{table}
+                    (id_recipe, name_recipe, serving_size, method)VALUES
+                    ({id_recipe}, {name_recipe}, {serving_size}, {method})""").format(
+                        schema=Identifier("fridge_system"),
+                        table = Identifier("recipe_table"),
+                        id_recipe = Literal(list_nextval_scalor[0]["nextval"]),#単一の値を取得するsqlメソッドをあとで作成
+                        name_recipe = Literal(name_recipe),
+                        serving_size = Literal(serving_size),
+                        method = Literal(method)
+        )
+        print("レシピ登録SQL", sql.as_string)
+        db.execute_non_query(sql=sql)
 
 
         #レシピと材料テーブルにデータ登録
+        list_ingredient = list_ingredient_alredy_exist + list_ingredient_not_exist
+        for ingredient in list_ingredient:
+            sqls = []
+            sql = SQL("""INSERT INTO {schema}.{table}(
+                        fk_id_recipe, fk_id_ingredient, amount)
+                        VALUES({fk_id_recipe}, {fk_id_ingredient}, {amount})""").format(
+                            schema=Identifier("fridge_system"),
+                            table = Identifier("recipe_ingredient_table"),
+                            fk_id_recipe = Literal(nextval),
+                            fk_id_ingredient = Identifier(ingredient["id_ingredient"]),
+                            amount = Identifier(ingredient["num"]),
+            )
+            db.execute_multiple_non_query(sqls=sqls)
+        
+        db.commit()
 
     except Exception as e:
         print(e)
+        db.rollback()
+        db.__del__
 
 
 
