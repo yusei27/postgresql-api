@@ -27,6 +27,7 @@ class ExecuteSQL:
         :return: None
         """
         # SQLの実行
+        print(sql)
         if bind_var is None:
             self.cursor.execute(sql)
         else:
@@ -39,8 +40,10 @@ class ExecuteSQL:
         :param bind_var: バインド変数
         :return: None
         """
+        print("MULTIPLE SQL", sqls)
         for sql in sqls:
             # SQLの実行
+            print(sql)
             self.cursor.execute(sql)
 
     def execute_query(self, sql: str, bind_var: tuple = None, count: int = 0) -> list:
@@ -72,6 +75,31 @@ class ExecuteSQL:
             rows = self.cursor.fetchmany(count)
             for row in rows:
                 result.append(dict(row))
+        return result
+    
+    def execute_multiple_query(self, sqls: list) -> list:
+        """SELECTのSQL実行メソッド
+        :param sql: 実行SQL
+        :param bind_var: バインド変数
+        :param count: データ取得件数
+        :return: 結果リスト
+        """
+        result = []
+        # SQLの実行
+        for sql in sqls:
+            print(sql)
+            self.cursor.execute(sql)
+
+
+
+            rows = self.cursor.fetchall()
+            print("rows", rows)
+            if len(rows) >= 1:
+                #取得結果が0件だったり、INSERTなど返却値がないSQLを発行したときは結果リストへの格納を行わない
+                for row in rows:
+                    print(row)
+                    result.append(dict(row))
+            
         return result
 
     def execute_query_column(self, table: str, bind_var: tuple = None,  count: int = 0) -> list:

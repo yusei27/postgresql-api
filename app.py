@@ -122,36 +122,41 @@ def register_recipe():
         if len(list_ingredient_not_exist) != 0:
             #材料テーブルに新規データを挿入するとき
             #材料テーブルの新規シーケンス番号を挿入レコード分取得
-            sql = "SELECT nextval('fridge_system.id_ingredient_id_ingredient_seq');" * len(list_ingredient_not_exist)
-            nextvals = db.execute_query(sql=sql)
+            sqls = ["SELECT nextval('fridge_system.id_ingredient_id_ingredient_seq');"] * len(list_ingredient_not_exist)
+            nextvals = db.execute_multiple_query(sqls=sqls)
             print("取得したnextvals", nextvals)
-            for index, ingredient in list_ingredient_not_exist:
+
+            print("追加材料",list_ingredient_not_exist)
+            sqls = []
+            for index, ingredient in enumerate(list_ingredient_not_exist):
                 #db.execute_non_query("""LOCK TABLE "fridge_system".ingredient_table ROW EXCLUSIVE""")
-                sqls = []
-                nextval = nextvals[index]
-                list_ingredient_not_exist[index]["id_ingredient"] = nextvals[index]
+                
+                nextval_ingredient = nextvals[index]["nextval"]
+                list_ingredient_not_exist[index]["id_ingredient"] = nextval_ingredient
                 sql = SQL("""INSERT INTO {schema}.{table}
                             (id_ingredient, name_ingredient, fk_id_unit, fk_id_genre)VALUES
                             ({id_ingredient}, {name_ingredient}, {fk_id_unit}, {fk_id_genre})""").format(
                                 schema=Identifier("fridge_system"),
                                 table = Identifier("ingredient_table"),
-                                id_ingredient = Literal(nextval),
+                                id_ingredient = Literal(nextval_ingredient),
                                 name_ingredient = Literal(ingredient["ingredient_name"]),
                                 fk_id_unit = Literal(ingredient["id_unit"]),
                                 fk_id_genre = Literal(ingredient["id_genre"])
                 )
-                sql.append(sql)
+                print("SQL作成", sql)
+                sqls.append(sql)
             db.execute_multiple_non_query(sqls=sqls)
 
         #レシピ登録
         sql = "SELECT nextval('fridge_system.recipe_table_id_recipe_seq');"
         list_nextval_scalor = db.execute_query(sql=sql)
+        nextval_recipe = list_nextval_scalor[0]["nextval"]
         sql = SQL("""INSERT INTO {schema}.{table}
                     (id_recipe, name_recipe, serving_size, method)VALUES
                     ({id_recipe}, {name_recipe}, {serving_size}, {method})""").format(
                         schema=Identifier("fridge_system"),
                         table = Identifier("recipe_table"),
-                        id_recipe = Literal(list_nextval_scalor[0]["nextval"]),#単一の値を取得するsqlメソッドをあとで作成
+                        id_recipe = Literal(nextval_recipe),#単一の値を取得するsqlメソッドをあとで作成
                         name_recipe = Literal(name_recipe),
                         serving_size = Literal(serving_size),
                         method = Literal(method)
@@ -169,18 +174,22 @@ def register_recipe():
                         VALUES({fk_id_recipe}, {fk_id_ingredient}, {amount})""").format(
                             schema=Identifier("fridge_system"),
                             table = Identifier("recipe_ingredient_table"),
-                            fk_id_recipe = Literal(nextval),
-                            fk_id_ingredient = Identifier(ingredient["id_ingredient"]),
-                            amount = Identifier(ingredient["num"]),
+                            fk_id_recipe = Literal(nextval_recipe),
+                            fk_id_ingredient = Literal(ingredient["id_ingredient"]),
+                            amount = Literal(ingredient["num"]),
             )
+            sqls.append(sql)
             db.execute_multiple_non_query(sqls=sqls)
         
         db.commit()
+        return jsonify({'status':200})
 
     except Exception as e:
         print(e)
         db.rollback()
         db.__del__
+        print("ロールバックを実行しました。")
+        return jsonify({'status':300})
 
 
 
