@@ -17,7 +17,8 @@ class ExecuteSQL:
         :return: None
         """
         # カーソルを作成する
-        self.connection = pool.getconn()
+        self.pool = pool
+        self.connection = self.pool.getconn()
         self.cursor = self.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
         #self.cursor = self.con.cursor(cursor_factory=psycopg2.extras.DictCursor)
     def execute_non_query(self, sql: str, bind_var: tuple = None) -> None:
@@ -160,8 +161,9 @@ class ExecuteSQL:
         """
         self.con.rollback()
     def __del__(self) -> None:
-        """デストラクタ
+        """デストラクタ DBとのセッションを切断する
         :return: None
         """
         self.cursor.close()
         self.connection.close()
+        self.pool.putconn(self.connection)
