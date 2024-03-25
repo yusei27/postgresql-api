@@ -1,5 +1,6 @@
 import psycopg2.pool
 from db.execute_sql import ExecuteSQL
+from sql.sql_creator import SqlCreator
 from flask_cors import CORS
 import configparser
 import os
@@ -190,7 +191,28 @@ def register_recipe():
         db.__del__
         print("ロールバックを実行しました。")
         return jsonify({'status':300})
+    
+@app.route("/get/ingredients/from/recipe", methods=["POST"])
+def getRecipeingredients():
+    try:
+        request_data = request.get_json()
+        print("request_data", request_data)
+        id_recipe = request_data["id_recipe"]
+    except Exception as e:
+        print(e)
+        print("リクエストの取得に失敗しました。")
+    
+    db = ExecuteSQL(pool)
 
+    try:
+        print("レシピ材料テーブルから材料IDを取得")
+        return jsonify({'status':200})
+    except Exception as e:
+        print(e)
+        db.rollback()
+        db.__del__
+        print("ロールバックを実行しました。")
+        return jsonify({'status':300})
 
 
 def connect_postgresql():
