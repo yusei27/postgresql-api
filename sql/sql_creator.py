@@ -19,5 +19,5 @@ class SqlCreator:
         print(dict_values)
         #filepath = "./sql/sql_extensiosn/" + filename
         with open("./sql/sql_extension/" + filename, "r") as f:
-            print("@@@@@@@", f.read().format(dict_values))
-        return
+            return f.read().format(dict_values)
+        

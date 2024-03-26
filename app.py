@@ -209,10 +209,10 @@ def getRecipeingredients():
         print("レシピ材料テーブルから材料IDを取得")
         sql_values = {"schema":"fridge_system", "id_recipe":str(id_recipe)}
         sql = SqlCreator.get_query_from_file("getRecipeIngredients.sql", sql_values)
-        # list_recipe_detail = db.execute_query(sql)
-        # print("レシピ詳細取得結果", list_recipe_detail)
-        # return jsonify({'status':200, 'data':list_recipe_detail})
-        return jsonify({"status":200})
+        list_recipe_detail = db.execute_query(sql)
+        print("レシピ詳細取得結果", list_recipe_detail)
+        return jsonify({'status':200, 'data':list_recipe_detail})
+    
     except Exception as e:
         print(e)
         db.rollback()
