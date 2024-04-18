@@ -3,6 +3,8 @@ FROM python:3.9
 #作成者
 LABEL maintainer "yusei-hashimoto"
 
+WORKDIR /postgresql-api
+
 #デフォルトでDebianが入る、下記のコマンドで余計なものを削除してコンテナサイズを落とす
 # 「&&（複数コマンドが書ける）」と「 \（改行して書ける）」
 # https://dev.classmethod.jp/articles/apt-get-magic-spell-in-docker/
@@ -17,13 +19,13 @@ RUN pip install --upgrade pip && \
     
 
 
-COPY ./ ./
+COPY ./ /postgresql-api/
 
 RUN pipenv install
 
 #API起動
 CMD ["pipenv", "run", "python", "app.py"]
-
+#[各種コマンド]
 # docker build . -t example3:latest 
 
 # docker image ls
@@ -35,3 +37,5 @@ CMD ["pipenv", "run", "python", "app.py"]
 #docker exec -i -t コンテナID /bin/bash  指定したコンテナのコマンドプロンプトに接続 psコマンドでIDを見る
 
 #docker run -it -v $(pwd) イメージID  カレントディレクトリをマウントしてコンテナを起動
+
+#docker logs コンテナID コンテナのログを出力
