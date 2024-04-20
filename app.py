@@ -233,11 +233,11 @@ def connect_postgresql():
         pool = psycopg2.pool.SimpleConnectionPool(
             minconn=2,
             maxconn=6,
-            user=config_db["POSTGRESSQL_DB_SERVER"]["user"],
-            password = config_db["POSTGRESSQL_DB_SERVER"]["password"],
-            host = config_db["POSTGRESSQL_DB_SERVER"]["host"],
-            port = config_db["POSTGRESSQL_DB_SERVER"]["port"],
-            database = config_db["POSTGRESSQL_DB_SERVER"]["dbname"]
+            user = os.environ.get("db_user"),
+            password = os.environ.get("db_password"),
+            host = os.environ.get("host"),
+            port = os.environ.get("db_port"),
+            dbname = os.environ.get("db_name")
         )
         print("プール作成")
         return pool
@@ -246,7 +246,6 @@ pool = connect_postgresql()
 
 
 if __name__== '__main__':
-      
       #特定のオリジンだけを許可する
       cors = CORS(app, resources={r"/*":{"origin": ["http://localhost:5173"]}})
       app.run(host='0.0.0.0', port=3334, debug=True, threaded=True)
