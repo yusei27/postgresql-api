@@ -39,3 +39,5 @@ CMD ["pipenv", "run", "python", "app.py"]
 #docker run -it -v $(pwd) イメージID  カレントディレクトリをマウントしてコンテナを起動
 
 #docker logs コンテナID コンテナのログを出力
+
+#docker stop コンテナID コンテナを停止
