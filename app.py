@@ -10,6 +10,8 @@ from psycopg2.sql import SQL
 
 from flask import Flask, jsonify, request
 
+from log.logger import logger
+
 app = Flask(__name__)
 
 
@@ -223,13 +225,13 @@ def getRecipeingredients():
 
 def connect_postgresql():
         # コンフィグファイルからデータを取得
-        config_db = configparser.ConfigParser()
-        config_ini_path = "./config/dbconfig.ini"
+        # config_db = configparser.ConfigParser()
+        # config_ini_path = "./config/dbconfig.ini"
 
-        # 指定したiniファイルが存在しない場合、エラー発生
-        if not os.path.exists(config_ini_path):
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), config_ini_path)
-        config_db.read(config_ini_path)
+        # # 指定したiniファイルが存在しない場合、エラー発生
+        # if not os.path.exists(config_ini_path):
+        #     raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), config_ini_path)
+        # config_db.read(config_ini_path)
         pool = psycopg2.pool.SimpleConnectionPool(
             minconn=2,
             maxconn=6,
@@ -240,6 +242,7 @@ def connect_postgresql():
             dbname = os.environ.get("db_name")
         )
         print("プール作成")
+        logger.info("デバック出力成功") 
         return pool
 
 pool = connect_postgresql()
@@ -249,4 +252,6 @@ if __name__== '__main__':
       #特定のオリジンだけを許可する
       cors = CORS(app, resources={r"/*":{"origin": ["http://localhost:5173"]}})
       app.run(host='0.0.0.0', port=3334, debug=True, threaded=True)
-      
+
+      print("あ")
+      print("うん")
