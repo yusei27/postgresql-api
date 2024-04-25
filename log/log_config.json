@@ -1,6 +1,6 @@
 {
     "version": 1,
-    "disable_existing_loggers": false,
+    "disable_existing_loggers":false,
     "formatters": {
         "simple": {
             "format": "%(asctime)s %(name)s:%(lineno)s %(funcName)s [%(levelname)s]: %(message)s"
@@ -16,31 +16,19 @@
         },
         "fileHandler": {
             "class": "logging.FileHandler",
-            "level": "INFO",
+            "level": "DEBUG",
             "formatter": "simple",
-            "filename": "/logs/info_logs"
+            "filename": "/logs/info_logs.log"
         }
     },
 
     "loggers": {
-        "__main__": {
+        "sample": {
             "level": "DEBUG",
-            "handlers": ["consoleHandler", "fileHandler"],
-            "propagate": false
-        },
-        "same_hierarchy": {
-            "level": "DEBUG",
-            "handlers": ["consoleHandler", "fileHandler"],
-            "propagate": false
-        },
-        "lower.sub": {
-            "level": "DEBUG",
-            "handlers": ["consoleHandler", "fileHandler"],
+            "handlers": ["fileHandler"],
             "propagate": false
         }
-    },
 
-    "root": {
-        "level": "DEBUG"
     }
+
 }
