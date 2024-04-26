@@ -18,14 +18,14 @@
             "class": "logging.FileHandler",
             "level": "DEBUG",
             "formatter": "simple",
-            "filename": "/logs/info_logs.log"
+            "filename": "/logs/postgresql-api_info.log"
         }
     },
 
     "loggers": {
-        "sample": {
+        "postgresql-api_info": {
             "level": "DEBUG",
-            "handlers": ["fileHandler"],
+            "handlers": ["fileHandler", "consoleHandler"],
             "propagate": false
         }
 

@@ -9,7 +9,7 @@ config.dictConfig(log_conf)
 
 # ここからはいつもどおり
 basicConfig(level=DEBUG)
-logger = getLogger("sample")
+logger = getLogger("postgresql-api_info")
 logger.info("dkjdlkj")
 
 # fh = FileHandler('/logs/info_logs.log')
