@@ -250,8 +250,8 @@ pool = connect_postgresql()
 
 if __name__== '__main__':
       #特定のオリジンだけを許可する
-      cors = CORS(app, resources={r"/*":{"origin": ["http://localhost:5173"]}})
-      app.run(host='0.0.0.0', port=3334, debug=True, threaded=True)
+      cors = CORS(app, resources={r"/*":{"origin": ["http://localhost:5173", "https://localhost:5173"]}})
+      app.run(host='0.0.0.0', port=3334, debug=True, threaded=True, ssl_context=('network/server.crt', 'network/server.key'))
 
       print("あ")
       print("うん")
