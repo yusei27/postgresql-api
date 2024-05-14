@@ -23,6 +23,21 @@ app = Flask(__name__)
 
 #あとで並列にリクエストを処理できるようにする
 # https://qiita.com/5zm/items/251be97d2800bf67b1c6
+
+
+@app.after_request
+def after_request(response):
+    allowed_origins = ["http://localhost:5173", "https://localhost:5173/select/data", "https://localhost:5173"]
+    origin = request.headers.get('Origin')
+    if origin in allowed_origins:
+        logger.info("アクセスが許可されています" + origin)
+        response.headers.add('Access-Control-Allow-Origin', origin)
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    response.headers.add('Access-Control-Allow-Headers', 'Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
+
 @app.route("/tmp", methods=["GET"])
 def get_tmp():
     print("tmp_select")
@@ -250,7 +265,7 @@ pool = connect_postgresql()
 
 if __name__== '__main__':
       #特定のオリジンだけを許可する
-      cors = CORS(app, resources={r"/*":{"origin": ["http://localhost:5173", "https://localhost:5173"]}})
+      #cors = CORS(app, resources={r"/*":{"origin": ["http://localhost:5173", "https://localhost:5173"]}})
       app.run(host='0.0.0.0', port=3334, debug=True, threaded=True, ssl_context=('network/server.crt', 'network/server.key'))
 
       print("あ")
