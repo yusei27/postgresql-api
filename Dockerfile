@@ -24,7 +24,11 @@ COPY ./ /postgresql-api/
 RUN pipenv install
 
 #API起動
-CMD ["pipenv", "run", "python", "app.py"]
+#CMD ["pipenv", "run", "python", "app.py"]
+CMD ["pipenv", "run", "gunicorn", "--config", "./wsgi/gunicorn.py"]
+#CMD ["pipenv", "run", "gunicorn", "--config", "gunicorn.py"]
+
+
 #[各種コマンド]
 # docker build . -t example3:latest 
 
@@ -41,3 +45,5 @@ CMD ["pipenv", "run", "python", "app.py"]
 #docker logs コンテナID コンテナのログを出力
 
 #docker stop コンテナID コンテナを停止
+
+#docker image prune　未使用イメージ　一括削除
