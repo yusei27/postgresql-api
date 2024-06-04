@@ -27,7 +27,7 @@ app = Flask(__name__)
 
 @app.after_request
 def after_request(response):
-    allowed_origins = ["http://localhost:5173", "https://localhost:5173/select/data", "https://localhost:5173"]
+    allowed_origins = ["http://localhost:5173", "https://localhost:5173/select/data", "https://localhost:5173", "http://localhost"]
     origin = request.headers.get('Origin')
     if origin in allowed_origins:
         logger.info("アクセスが許可されています" + origin)

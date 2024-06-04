@@ -10,8 +10,8 @@ wsgi_app = 'app:app'#:application'
 #chdir = '../'
 
 #hhtps ssl certificate
-certfile = './network/server.crt'
-keyfile = './network/server.key'
+# certfile = './network/server.crt'
+# keyfile = './network/server.key'
 
 # daemon mode
 daemon = False
