@@ -27,6 +27,11 @@
             "level": "DEBUG",
             "handlers": ["fileHandler", "consoleHandler"],
             "propagate": false
+        },
+        "prod_loggers": {
+            "level": "DEBUG",
+            "handlers": ["consoleHandler"],
+            "propagate": false
         }
 
     }

@@ -1,3 +1,4 @@
+import os
 #
 # Gunicorn config file
 #
@@ -34,7 +35,14 @@ workers = 2
 #========================================
 # access log
 # accesslog = '/work/python/gunic/gu/logs/access.log'
-accesslog = '/logs/postgresql-api_info.log'
+if os.environ.get("environment") == "development":
+    print("gunicorn.py development")
+    accesslog = '/logs/postgresql-api_info.log'
+elif os.environ.get("environment") == "production":
+    print("gunicorn.py production")
+else:
+    raise Exception("適切なロガーが設定されていません。")
+#accesslog = '/logs/postgresql-api_info.log'
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
 # # gunicorn log
