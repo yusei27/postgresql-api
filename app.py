@@ -250,11 +250,11 @@ def connect_postgresql():
         pool = psycopg2.pool.SimpleConnectionPool(
             minconn=2,
             maxconn=6,
-            user = os.environ.get("db_user"),
-            password = os.environ.get("db_password"),
-            host = os.environ.get("host"),
-            port = os.environ.get("db_port"),
-            dbname = os.environ.get("db_name")
+            user = os.environ.get("DB_USER"),
+            password = os.environ.get("DB_PASSWORD"),
+            host = os.environ.get("DB_HOST"),
+            port = os.environ.get("DB_PORT"),
+            dbname = os.environ.get("DB_NAME")
         )
         print("プール作成")
         logger.info("デバック出力成功") 
